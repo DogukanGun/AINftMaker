@@ -1,6 +1,22 @@
-const CreateNft = () => {
-    return (
+import { useRouter } from "next/router";
+import { ChangeEvent, useEffect, useState } from "react";
 
+const CreateNft = () => {
+    const router = useRouter();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        if (selectedFile !== null) {
+            router.push("/nft/save");
+        }
+    }, [selectedFile]);
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files && event.target.files[0];
+        setSelectedFile(file || null);
+    };
+
+    return (
         <div className="flex-col items-center justify-center mt-10 my-auto h-screen px-96 w-full">
             <h1 className="text-white text-center">Upload Image for NFT</h1>
             <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center mt-24 w-full h-64 border-2 border-gray-500 border-dashed rounded-lg cursor-pointer bg-gray-700 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-700 dark:hover:bg-gray-600">
@@ -9,10 +25,9 @@ const CreateNft = () => {
                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                 </div>
-                <input id="dropzone-file" type="file" className="hidden" />
+                <input id="dropzone-file" type="file" onChange={handleFileChange} className="hidden" />
             </label>
         </div>
-
     )
 }
 
