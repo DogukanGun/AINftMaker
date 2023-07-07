@@ -25,7 +25,7 @@ const CreateNft = () => {
                 const fileContent = upload.target?.result;
                 console.log('File content:', fileContent);
                 const data = { file: fileContent };
-                axios.post(process.env.AI_API + "cartoonize", data)
+                axios.post("http://82.165.252.154:8080/cartoonize", data)
                     .then(result => {
                         if (result.data) {
                             setNftImageData("data:image/png;base64," + result.data);
@@ -105,7 +105,7 @@ const CreateNft = () => {
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
                         </svg>
                         <span className="mr-2">1</span>
-                        Upload <span className="hidden sm:inline-flex sm:ml-2">Info</span>
+                        Upload
                     </span>
                 </li>
                 <li className={`flex ${stepperNumber > 2 ? 'text-blue-600' : ''} md:w-full items-center after:content-[''] after:w-full after:h-1 after:border-b after:border-gray-200 after:border-1 after:hidden sm:after:inline-block after:mx-6 xl:after:mx-10 dark:after:border-gray-700`}>
@@ -114,7 +114,7 @@ const CreateNft = () => {
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
                         </svg>}
                         <span className="mr-2">2</span>
-                        Decide <span className="hidden sm:inline-flex sm:ml-2">Info</span>
+                        Decide
                     </span>
                 </li>
                 <li className="flex items-center">
