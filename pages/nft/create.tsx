@@ -25,7 +25,7 @@ const CreateNft = () => {
                 const fileContent = upload.target?.result;
                 console.log('File content:', fileContent);
                 const data = { file: fileContent };
-                axios.post("http://localhost:8000/cartoonize", data)
+                axios.post(process.env.AI_API + "cartoonize", data)
                     .then(result => {
                         if (result.data) {
                             setNftImageData("data:image/png;base64," + result.data);
