@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
 import { create } from 'ipfs-http-client';
 import { Connection, PublicKey, Keypair, Transaction, SystemProgram } from '@solana/web3.js';
+import { e2e } from "@/services/e2e";
+
 
 const CreateNft = () => {
     const router = useRouter();
@@ -14,7 +16,7 @@ const CreateNft = () => {
             router.push("/nft/save");
         }
     }, [selectedFile]);
-    const ipfs = create({ host: 'localhost', port: 8080, protocol: 'http' });
+    const ipfs = create({ host: '127.0.0.1', port: 8000, protocol: 'http' });
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files && event.target.files[0];
         //setSelectedFile(file || null);
@@ -22,10 +24,11 @@ const CreateNft = () => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (upload) => {
+                console.log(upload.target?.result);
                 const fileContent = upload.target?.result;
                 console.log('File content:', fileContent);
                 const data = { file: fileContent };
-                axios.post("http://82.165.252.154:8080/cartoonize", data)
+                axios.post("http://127.0.0.1:8000/cartoonize", data)
                     .then(result => {
                         if (result.data) {
                             setNftImageData("data:image/png;base64," + result.data);
@@ -46,33 +49,40 @@ const CreateNft = () => {
     }
 
     async function transferNFT(provider: any, nftId: string): Promise<void> {
-        const connection = new Connection(process.env.RPC_ENDPOINT); // Update with your Solana network URL
-        const nftProgramId = new PublicKey('YOUR_NFT_PROGRAM_ID'); // Replace with the actual NFT program ID
-        const wallet = provider.wallet;
-      
-        const transferInstruction = SystemProgram.transfer({
-          fromPubkey: wallet.publicKey,
-          toPubkey: wallet.publicKey,
-          lamports: 0, // Replace with the desired amount of lamports (Solana's native token) to transfer along with the NFT
-        });
-      
-        const transferTx = new Transaction().add(transferInstruction);
+        //const connection = new Connection(process.env.RPC_ENDPOINT); // Update with your Solana network URL
+        //const nftProgramId = new PublicKey('YOUR_NFT_PROGRAM_ID'); // Replace with the actual NFT program ID
+         const userPublicKey = new PublicKey(provider.publicKey.toString());
+        // console.log(userPublicKey);
+        //console.log("PROVIDERRRRRR",provider.publicKey.toString());  
+        //const testPublicKey = new   PublicKey("HWD4hHZfTWPgKbN1YSYxE9kbTgtaKpV6EHPzWJwoEKCs");
+        // const transferInstruction = SystemProgram.transfer({
+        //   fromPubkey: wallet.publicKey,
+        //   toPubkey: wallet.publicKey,
+        //   lamports: 0, // Replace with the desired amount of lamports (Solana's native token) to transfer along with the NFT
+        // });
+
+        //const transferTx = new Transaction().add(transferInstruction);
         // TODO: Add additional instructions and signers required for the NFT transfer
-      
+
         // TODO: Construct the NFT transfer transaction based on your NFT program
-      
+
         // Sign and send the transaction with durable nonce
-        const { blockhash } = await connection.getRecentBlockhash();
-        transferTx.recentBlockhash = blockhash;
-        transferTx.feePayer = wallet.publicKey;
-        const signedTx = await wallet.signTransaction(transferTx, { durableNonce: true });
-        const txId = await connection.sendRawTransaction(signedTx.serialize());
-      
-        // Wait for transaction confirmation
-        await connection.confirmTransaction(txId);
-      
+        // const { blockhash } = await connection.getRecentBlockhash();
+        // transferTx.recentBlockhash = blockhash;
+        // transferTx.feePayer = wallet.publicKey;
+        // const signedTx = await wallet.signTransaction(transferTx, { durableNonce: true });
+        // const txId = await connection.sendRawTransaction(signedTx.serialize());
+
+        // // Wait for transaction confirmation
+        // await connection.confirmTransaction(txId);
+
         // TODO: Handle any additional logic after the NFT transfer
+
+        e2e(userPublicKey);
       }
+
+
+
     const getProvider = () => {
         if ('phantom' in window) {
             const provider = window.phantom?.solana;
@@ -136,7 +146,7 @@ const CreateNft = () => {
                 <>
                     <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center mt-24 w-full h-64 border-2 border-gray-500 border-dashed rounded-lg cursor-pointer bg-gray-700 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-700 dark:border-gray-600 dark:hover:border-gray-700 dark:hover:bg-gray-600">
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg aria-hidden="true" className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <svg aria-hidden="true" className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                             <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
                         </div>
