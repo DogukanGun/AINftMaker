@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
-import { create } from 'ipfs-http-client';
 import { Connection, PublicKey, Keypair, Transaction, SystemProgram } from '@solana/web3.js';
 import { e2e } from "@/services/e2e";
 
@@ -11,15 +10,14 @@ const CreateNft = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [nftImageData, setNftImageData] = useState<string>("");
     const [stepperNumber, setStepperNumber] = useState<number>(1);
+    const [cid, setCid] = useState<string>("");
+
     useEffect(() => {
-        if (selectedFile !== null) {
-            router.push("/nft/save");
-        }
-    }, [selectedFile]);
-    const ipfs = create({ host: '127.0.0.1', port: 8000, protocol: 'http' });
+
+    }, [])
+
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files && event.target.files[0];
-        //setSelectedFile(file || null);
         if (file) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -28,7 +26,7 @@ const CreateNft = () => {
                 const fileContent = upload.target?.result;
                 console.log('File content:', fileContent);
                 const data = { file: fileContent };
-                axios.post("http://127.0.0.1:8000/cartoonize", data)
+                axios.post("http://localhost:8000/cartoonize", data)
                     .then(result => {
                         if (result.data) {
                             setNftImageData("data:image/png;base64," + result.data);
@@ -39,9 +37,17 @@ const CreateNft = () => {
         };
     };
 
-    const buyButtonClicked = () => {
+    const buyButtonClicked = async () => {
+        const data = {
+            bodyOfImage: nftImageData,
+        };
+        const response = await fetch("/api/upload", {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
+        console.log(response.json());
+        
         setStepperNumber(3);
-
     }
 
     const cancelButtonClicked = () => {
@@ -100,7 +106,7 @@ const CreateNft = () => {
 
             // Call the transferNFT function
             const nftId = 'YOUR_NFT_ID';
-            transferNFT(provider,nftId);
+            transferNFT(provider, nftId);
         } catch (err) {
             // Handle error
         }
