@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
-import { create } from 'ipfs-http-client';
 import { Connection, PublicKey, Keypair, Transaction, SystemProgram } from '@solana/web3.js';
 
 const CreateNft = () => {
@@ -9,15 +8,14 @@ const CreateNft = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [nftImageData, setNftImageData] = useState<string>("");
     const [stepperNumber, setStepperNumber] = useState<number>(1);
+    const [cid, setCid] = useState<string>("");
+
     useEffect(() => {
-        if (selectedFile !== null) {
-            router.push("/nft/save");
-        }
-    }, [selectedFile]);
-    const ipfs = create({ host: 'localhost', port: 8080, protocol: 'http' });
+
+    }, [])
+
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files && event.target.files[0];
-        //setSelectedFile(file || null);
         if (file) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -25,7 +23,7 @@ const CreateNft = () => {
                 const fileContent = upload.target?.result;
                 console.log('File content:', fileContent);
                 const data = { file: fileContent };
-                axios.post("http://82.165.252.154:8080/cartoonize", data)
+                axios.post("http://localhost:8000/cartoonize", data)
                     .then(result => {
                         if (result.data) {
                             setNftImageData("data:image/png;base64," + result.data);
@@ -36,9 +34,17 @@ const CreateNft = () => {
         };
     };
 
-    const buyButtonClicked = () => {
+    const buyButtonClicked = async () => {
+        const data = {
+            bodyOfImage: nftImageData,
+        };
+        const response = await fetch("/api/upload", {
+            method: "POST",
+            body: JSON.stringify(data),
+        });
+        console.log(response.json());
+        
         setStepperNumber(3);
-
     }
 
     const cancelButtonClicked = () => {
@@ -49,30 +55,30 @@ const CreateNft = () => {
         const connection = new Connection(process.env.RPC_ENDPOINT); // Update with your Solana network URL
         const nftProgramId = new PublicKey('YOUR_NFT_PROGRAM_ID'); // Replace with the actual NFT program ID
         const wallet = provider.wallet;
-      
+
         const transferInstruction = SystemProgram.transfer({
-          fromPubkey: wallet.publicKey,
-          toPubkey: wallet.publicKey,
-          lamports: 0, // Replace with the desired amount of lamports (Solana's native token) to transfer along with the NFT
+            fromPubkey: wallet.publicKey,
+            toPubkey: wallet.publicKey,
+            lamports: 0, // Replace with the desired amount of lamports (Solana's native token) to transfer along with the NFT
         });
-      
+
         const transferTx = new Transaction().add(transferInstruction);
         // TODO: Add additional instructions and signers required for the NFT transfer
-      
+
         // TODO: Construct the NFT transfer transaction based on your NFT program
-      
+
         // Sign and send the transaction with durable nonce
         const { blockhash } = await connection.getRecentBlockhash();
         transferTx.recentBlockhash = blockhash;
         transferTx.feePayer = wallet.publicKey;
         const signedTx = await wallet.signTransaction(transferTx, { durableNonce: true });
         const txId = await connection.sendRawTransaction(signedTx.serialize());
-      
+
         // Wait for transaction confirmation
         await connection.confirmTransaction(txId);
-      
+
         // TODO: Handle any additional logic after the NFT transfer
-      }
+    }
     const getProvider = () => {
         if ('phantom' in window) {
             const provider = window.phantom?.solana;
@@ -90,7 +96,7 @@ const CreateNft = () => {
 
             // Call the transferNFT function
             const nftId = 'YOUR_NFT_ID';
-            transferNFT(provider,nftId);
+            transferNFT(provider, nftId);
         } catch (err) {
             // Handle error
         }
