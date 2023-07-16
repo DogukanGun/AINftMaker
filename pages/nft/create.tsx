@@ -1,8 +1,10 @@
 import axios from "axios";
 import { useRouter } from "next/router";
 import { ChangeEvent, useEffect, useState } from "react";
-import { Connection, PublicKey, Keypair, Transaction, SystemProgram } from '@solana/web3.js';
 import { e2e } from "@/services/e2e";
+import { Connection, PublicKey } from '@solana/web3.js';
+import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import uuid from 'react-uuid';
 
 
 const CreateNft = () => {
@@ -11,6 +13,7 @@ const CreateNft = () => {
     const [nftImageData, setNftImageData] = useState<string>("");
     const [stepperNumber, setStepperNumber] = useState<number>(1);
     const [cid, setCid] = useState<string>("");
+    const [nftUuid,setNftUuid] = useState<string>("");
 
     useEffect(() => {
 
@@ -33,6 +36,10 @@ const CreateNft = () => {
                             setStepperNumber(stepperNumber + 1);
                         }
                     })
+                    .catch(err => {
+                        console.error(err);
+                        //show notification
+                    })
             }
         };
     };
@@ -41,12 +48,20 @@ const CreateNft = () => {
         const data = {
             bodyOfImage: nftImageData,
         };
-        const response = await fetch("/api/upload", {
+        fetch("/api/upload", {
             method: "POST",
             body: JSON.stringify(data),
-        });
-        console.log(response.json());
-        
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data.cid);
+                setCid(data.cid);
+                // Handle the response data
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                // Handle the error
+            });
         setStepperNumber(3);
     }
 
@@ -57,11 +72,11 @@ const CreateNft = () => {
     async function transferNFT(provider: any, nftId: string): Promise<void> {
         //const connection = new Connection(process.env.RPC_ENDPOINT); // Update with your Solana network URL
         //const nftProgramId = new PublicKey('YOUR_NFT_PROGRAM_ID'); // Replace with the actual NFT program ID
-         const userPublicKey = new PublicKey(provider.publicKey.toString());
+        const userPublicKey = new PublicKey(provider.publicKey.toString());
         // console.log(userPublicKey);
-        //console.log("PROVIDERRRRRR",provider.publicKey.toString());  
-        //const testPublicKey = new   PublicKey("HWD4hHZfTWPgKbN1YSYxE9kbTgtaKpV6EHPzWJwoEKCs");
-        // const transferInstruction = SystemProgram.transfer({
+        //console.log("PROVIDER",provider.publicKey.toString());  
+        //const testPublicKey = new PublicKey("HWD4hHZfTWPgKbN1YSYxE9kbTgtaKpV6EHPzWJwoEKCs");
+        //const transferInstruction = SystemProgram.transfer({
         //   fromPubkey: wallet.publicKey,
         //   toPubkey: wallet.publicKey,
         //   lamports: 0, // Replace with the desired amount of lamports (Solana's native token) to transfer along with the NFT
@@ -84,8 +99,13 @@ const CreateNft = () => {
 
         // TODO: Handle any additional logic after the NFT transfer
 
-        e2e(userPublicKey);
-      }
+        e2e(userPublicKey, "https://ipfs.io/ipfs/" + cid + "/example.png")
+            .then(res => {
+                if (res) {
+                    setStepperNumber(4);
+                }
+            })
+    }
 
 
 
@@ -105,11 +125,41 @@ const CreateNft = () => {
             const resp = await provider.connect();
 
             // Call the transferNFT function
-            const nftId = 'YOUR_NFT_ID';
+            setNftUuid(uuid())
+            const nftId = nftUuid;
             transferNFT(provider, nftId);
         } catch (err) {
             // Handle error
         }
+    }
+    const sendToFriend = async () => {
+        // Specify the NFT contract address
+        const nftContractAddress = new PublicKey('<<NFT_CONTRACT_ADDRESS>>');
+
+        // Fetch the token accounts owned by the wallet
+        const provider = getProvider(); // see "Detecting the Provider"
+        const userPublicKey = new PublicKey(provider.publicKey.toString());
+        const ownedTokenAccounts = await provider.getTokenAccountsByOwner(userPublicKey, {
+            programId: TOKEN_PROGRAM_ID,
+        });
+
+        // Find the NFT token account
+        const nftTokenAccount = ownedTokenAccounts.find(
+            (tokenAccount: { account: { data: { parsed: { info: { tokenAmount: { token: PublicKey } } } } } }) =>
+                tokenAccount.account.data.parsed.info.tokenAmount.token.equals(nftContractAddress)
+        );
+
+        if (nftTokenAccount) {
+            // The NFT is found in the wallet
+            const nftTokenId = nftTokenAccount.pubkey.toBase58();
+            console.log('NFT Token ID:', nftTokenId);
+        } else {
+            // The NFT is not found in the wallet
+            console.log('NFT not found in the wallet');
+        }
+    }
+    const returnHome = () => {
+        router.push("/");
     }
 
     return (
@@ -134,6 +184,9 @@ const CreateNft = () => {
                     </span>
                 </li>
                 <li className="flex items-center">
+                    {stepperNumber > 3 && <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
+                    </svg>}
                     <span className="mr-2">3</span>
                     Transfer
                 </li>
@@ -163,6 +216,13 @@ const CreateNft = () => {
             {stepperNumber == 3 &&
                 <div>
                     <button type="button" onClick={startUpload} className="focus:outline-none w-full text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Transfer NFT to Wallet</button>
+                    <button type="button" onClick={sendToFriend} className="focus:outline-none w-full text-white bg-purple-700 hover:bg-purple-900 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Send NFT to Friend</button>
+                </div>
+            }
+            {stepperNumber == 4 &&
+                <div>
+                    Transfer is done.
+                    <button type="button" onClick={returnHome} className="focus:outline-none w-full text-white bg-purple-700 hover:bg-purple-900 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Return Home Page</button>
                 </div>
             }
         </div>

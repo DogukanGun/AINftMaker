@@ -15,7 +15,7 @@ import {
   import { WrappedConnection } from "./wrappedConnection";
   import { use } from "chai";
 
-  export const e2e = async (userPublicKey: PublicKey) => {
+  export const e2e = async (userPublicKey: PublicKey,uri:string = "https://wallpaperaccess.com/full/5502889.jpg"):Promise<boolean> => {
     const apiKey = process.env["NEXT_PUBLIC_API_KEY"];
     console.log("Api key: " + apiKey);
     if (!apiKey) {
@@ -70,7 +70,7 @@ import {
       name: "Cartoon Picture",
       symbol: "CRTN",
       //uri: "https://arweave.net/gfO_TkYttQls70pTmhrdMDz9pfMUXX8hZkaoIivQjGs",
-      uri:   "https://wallpaperaccess.com/full/5502889.jpg",
+      uri: uri,
       creators: [],
       editionNonce: 253,
       tokenProgramVersion: TokenProgramVersion.Original,
@@ -123,6 +123,7 @@ import {
       "Successfully transferred nft to wallet: " +
         newOwnerWallet.toBase58()
     );
+    return true;
   };
   
   //e2e(userPublicKey);

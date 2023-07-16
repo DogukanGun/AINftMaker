@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile # Path to your Dockerfile for the Next.js app
+    restart: always
+
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - 80:80 # Map HTTP port
+      - 443:443 # Map HTTPS port
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - nextjs
