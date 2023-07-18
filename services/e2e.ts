@@ -15,7 +15,9 @@ import {
   import { WrappedConnection } from "./wrappedConnection";
   import { use } from "chai";
 
-  export const e2e = async (userPublicKey: PublicKey,uri:string = "https://wallpaperaccess.com/full/5502889.jpg"):Promise<boolean> => {
+  export const e2e = async (userPublicKey: PublicKey,uri:string = "https://wallpaperaccess.com/full/5502889.jpg"):Promise<string> => {
+    console.log("Starting e2e test.");
+    console.log("uri: " + uri);
     const apiKey = process.env["NEXT_PUBLIC_API_KEY"];
     console.log("Api key: " + apiKey);
     if (!apiKey) {
@@ -123,7 +125,7 @@ import {
       "Successfully transferred nft to wallet: " +
         newOwnerWallet.toBase58()
     );
-    return true;
+    return assetId.toBase58();
   };
   
   //e2e(userPublicKey);

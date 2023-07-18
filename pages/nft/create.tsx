@@ -5,6 +5,7 @@ import { e2e } from "@/services/e2e";
 import { Connection, PublicKey } from '@solana/web3.js';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import uuid from 'react-uuid';
+import { getAsset } from "@/services/getAssetInfo";
 
 
 const CreateNft = () => {
@@ -18,6 +19,7 @@ const CreateNft = () => {
     useEffect(() => {
 
     }, [])
+    
 
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files && event.target.files[0];
@@ -54,15 +56,15 @@ const CreateNft = () => {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data.cid);
+                console.log("cid when buy button clicked", data.cid);
                 setCid(data.cid);
+                setStepperNumber(3);
                 // Handle the response data
             })
             .catch((error) => {
                 console.error('Error:', error);
                 // Handle the error
             });
-        setStepperNumber(3);
     }
 
     const cancelButtonClicked = () => {
@@ -98,16 +100,25 @@ const CreateNft = () => {
         // await connection.confirmTransaction(txId);
 
         // TODO: Handle any additional logic after the NFT transfer
+        console.log("CID before entering into E2E: " + cid);
 
         e2e(userPublicKey, "https://ipfs.io/ipfs/" + cid + "/example.png")
             .then(res => {
                 if (res) {
                     setStepperNumber(4);
+                    console.log("assetId", res);
+
+                    //here we call getAsset function
+                    getAsset(res).then(assetInfo => {
+                        console.log("Asset Info: ", assetInfo);
+                    }).catch(err => {
+                        console.error("Error getting asset info: ", err);
+                    });
                 }
             })
     }
 
-
+    
 
     const getProvider = () => {
         if ('phantom' in window) {
@@ -119,6 +130,8 @@ const CreateNft = () => {
         }
         window.open('https://phantom.app/', '_blank');
     };
+
+
     const startUpload = async () => {
         const provider = getProvider(); // see "Detecting the Provider"
         try {
@@ -183,7 +196,7 @@ const CreateNft = () => {
                         Decide
                     </span>
                 </li>
-                <li className="flex items-center">
+                <li className={`flex ${stepperNumber > 3 ? 'text-blue-600' : ''} items-center`}>
                     {stepperNumber > 3 && <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
                     </svg>}
@@ -221,8 +234,11 @@ const CreateNft = () => {
             }
             {stepperNumber == 4 &&
                 <div>
-                    Transfer is done.
-                    <button type="button" onClick={returnHome} className="focus:outline-none w-full text-white bg-purple-700 hover:bg-purple-900 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Return Home Page</button>
+                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                        <p className="font-bold">Success</p>
+                        <p>Transfer is done.</p>
+                    </div>
+                <button type="button" onClick={returnHome} className="focus:outline-none w-full text-white bg-purple-700 hover:bg-purple-900 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Return Home Page</button>
                 </div>
             }
         </div>
