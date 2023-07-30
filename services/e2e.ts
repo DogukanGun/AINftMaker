@@ -66,7 +66,7 @@ import {
       "Master edition account: " + collectionMasterEditionAccount.toBase58()
     );
     console.log("\n");
-  
+      
     // Mint a compressed NFT
     const nftArgs = {
       name: "Cartoon Picture",
