@@ -15,7 +15,9 @@ import {
   import { WrappedConnection } from "./wrappedConnection";
   import { use } from "chai";
 
-  export const e2e = async (userPublicKey: PublicKey) => {
+  export const e2e = async (userPublicKey: PublicKey,uri:string = "https://wallpaperaccess.com/full/5502889.jpg"):Promise<string> => {
+    console.log("Starting e2e test.");
+    console.log("uri: " + uri);
     const apiKey = process.env["NEXT_PUBLIC_API_KEY"];
     console.log("Api key: " + apiKey);
     if (!apiKey) {
@@ -64,13 +66,13 @@ import {
       "Master edition account: " + collectionMasterEditionAccount.toBase58()
     );
     console.log("\n");
-  
+      
     // Mint a compressed NFT
     const nftArgs = {
       name: "Cartoon Picture",
       symbol: "CRTN",
       //uri: "https://arweave.net/gfO_TkYttQls70pTmhrdMDz9pfMUXX8hZkaoIivQjGs",
-      uri:   "https://wallpaperaccess.com/full/5502889.jpg",
+      uri: uri,
       creators: [],
       editionNonce: 253,
       tokenProgramVersion: TokenProgramVersion.Original,
@@ -123,6 +125,7 @@ import {
       "Successfully transferred nft to wallet: " +
         newOwnerWallet.toBase58()
     );
+    return assetId.toBase58();
   };
   
   //e2e(userPublicKey);

@@ -131,8 +131,8 @@ import {
       {
         createMetadataAccountArgsV3: {
           data: {
-            name: "Cem's collection",
-            symbol: "CEMO",
+            name: "Cartoon collection",
+            symbol: "CRTN",
             uri: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Sol_de_Mayo-Bandera_de_Argentina.svg/1200px-Sol_de_Mayo-Bandera_de_Argentina.svg.png",
             sellerFeeBasisPoints: 100,
             creators: null,
@@ -464,6 +464,11 @@ import {
     let assetProof = await connectionWrapper.getAssetProof(assetId);
     const rpcAsset = await connectionWrapper.getAsset(assetId);
     const leafNonce = rpcAsset.compression.leaf_id;
+    let proofPath = assetProof.proof.map((node: string) => ({
+      pubkey: new PublicKey(node),
+      isSigner: false,
+      isWritable: false,
+  }));
     const treeAuthority = await getBubblegumAuthorityPDA(
       new PublicKey(assetProof.tree_id)
     );
@@ -478,6 +483,7 @@ import {
         merkleTree: new PublicKey(assetProof.tree_id),
         logWrapper: SPL_NOOP_PROGRAM_ID,
         compressionProgram: SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
+        anchorRemainingAccounts: proofPath,
       },
       {
         root: bufferToArray(bs58.decode(assetProof.root)),

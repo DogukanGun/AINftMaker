@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Web3Storage, File } from 'web3.storage';
-import { Buffer } from 'buffer';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const requestMethod = req.method;
@@ -32,6 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (requestMethod == "POST") {
         const cid = await client.put(files);
         console.log(cid);
-        res.send(cid);
+        res.json({cid});
     }
 }
